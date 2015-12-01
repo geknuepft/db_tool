@@ -39,6 +39,11 @@ class conv {
         fwrite($this->f_, $s . "\n");
     }
 
+    private function esc_str($val) {
+        if ($val == '') return 'NULL';
+        return "'" . mysql_escape_string($val) . "'";
+    }
+
     private function article(
       $article_id,
       $pattern_id,
@@ -48,25 +53,26 @@ class conv {
       $foto_mi,
       $foto_ma,
       $foto_prod,
-      $article_nr
+      $article_nr,
+      $remarks
     ) {
         $this->sql(
           "\n" . '-- create article ' . $article_nr . "\n"
           . 'INSERT INTO article '
           . '(article_id, pattern_id, category_id, created, '
           . 'length_mm, foto_mi, foto_ma, foto_prod, '
-          . 'article_nr) VALUES('
+          . 'article_nr, remarks) VALUES('
           . intval($article_id) . ', '
           . intval($pattern_id) . ', '
           . intval($category_id) . ', '
           . "'" . $created->format('Y-m-d H:i:s') . "', "
           . intval($length_cm * 10) . ', '
-          . "'" . mysql_escape_string($foto_mi) . "', "
-          . "'" . mysql_escape_string($foto_ma) . "', "
-          . "'" . mysql_escape_string($foto_prod) . "', "
-          . "'" . mysql_escape_string($article_nr) . "');"
+          .  $this->esc_str($foto_mi) . ", "
+          .  $this->esc_str($foto_ma) . ", "
+          .  $this->esc_str($foto_prod) . ", "
+          .  $this->esc_str($article_nr) . ", "
+          .  $this->esc_str($remarks) . ");"
         );
-        $this->sql('SET @article_id := LAST_INSERT_ID();');
     }
 
     // caution: material is not escaped
@@ -79,7 +85,7 @@ class conv {
           'INSERT INTO component (article_id, material_id, position) VALUES('
           . '(' . $article . '), '
           . '(' . $material . '), '
-          . "'" . mysql_escape_string($position) . "');"
+          . $this->esc_str($position) . ");"
         );
     }
 
@@ -99,15 +105,46 @@ class conv {
           . "'" . $created->format('Y-m-d H:i:s') . "', "
           . intval($price * 100) . ', '
           . ($is_present?100:0) . ', '
-          . "'" . mysql_escape_string($remarks) . "');"
+          . $this->esc_str($remarks) . ");"
         );
+        $this->sql('SET @instance_id := LAST_INSERT_ID();');
+    }
+
+    private function order(
+      $created,
+      $article,
+      $instance
+    ) {
+        $this->sql(
+          'INSERT INTO `order` (created, paid, sent) VALUES ('
+          . "'" . $created->format('Y-m-d H:i:s') . "', "
+          . "'" . $created->format('Y-m-d H:i:s') . "', "
+          . "'" . $created->format('Y-m-d H:i:s') . "');"
+        );
+        $this->sql('SET @order_id := LAST_INSERT_ID();');
+        $this->sql(
+          'INSERT INTO order_x_article (order_id, article_id) VALUES ('
+          . '@order_id, ' . $article . ');'
+        );
+        $this->sql(
+          'INSERT INTO order_x_instance (order_id, instance_id) VALUES ('
+          . '@order_id, ' . $instance . ');'
+        );
+    }
+
+    private function del_all($table_name) {
+        $this->sql("DELETE FROM `$table_name`;");
+        $this->sql("ALTER TABLE `$table_name` AUTO_INCREMENT = 1;");
     }
 
     public function output() {
 
-        $this->sql('TRUNCATE TABLE component;');
-        $this->sql('TRUNCATE TABLE instance;');
-        $this->sql('TRUNCATE TABLE article;');
+        $this->del_all('order_x_article');
+        $this->del_all('order_x_instance');
+        $this->del_all('order');
+        $this->del_all('component');
+        $this->del_all('instance');
+        $this->del_all('article');
 
         foreach ($this->lines_ as $line) {
             if ($line['instanz_nr'] == 1) {
@@ -122,7 +159,8 @@ class conv {
                   $line['foto_mi'],
                   $line['foto_ma'],
                   $line['foto_red'],
-                  $line['atricle_nr_red']
+                  $line['atricle_nr_red'],
+                  $line['remarks_article']
                 );
 
                 // create components
@@ -134,7 +172,7 @@ class conv {
                     if ($mat_code == '') continue;
 
                     $this->component(
-                      '@article_id',
+                      intval($line['id']),
                       $this->get_material_id($mat_code),
                       chr(65 + $i++)
                     );
@@ -143,19 +181,31 @@ class conv {
 
             // create instance
             $this->instance(
-              '@article_id',
+              intval($line['id']),
               $line['owner'],
               new Datetime($line['created']),
               $line['price_red'],
               $line['present_dt'] != '',
               $line['remarks']
             );
+
+            // create order
+            if ($line['selled_dt'] != '' || $line['present_dt'] != '') {
+                $dt = ($line['selled_dt'] != '')?$line['selled_dt']:$line['present_dt'];
+
+                $this->order(
+                  new Datetime($dt),
+                  intval($line['id']),
+                  '@instance_id'
+                );
+            }
         }
 
         $this->sql('UPDATE article SET foto_mi = NULL WHERE foto_mi = \'\';');
         $this->sql('UPDATE article SET foto_ma = NULL WHERE foto_ma = \'\';');
         $this->sql('UPDATE article SET foto_prod = NULL WHERE foto_prod = \'\';');
         $this->sql('UPDATE article SET remarks = NULL WHERE remarks = \'\';');
+        $this->sql('UPDATE order SET markt_id = 1;');
 
     }
 
