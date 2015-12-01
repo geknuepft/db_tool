@@ -205,7 +205,7 @@ class conv {
         $this->sql('UPDATE article SET foto_ma = NULL WHERE foto_ma = \'\';');
         $this->sql('UPDATE article SET foto_prod = NULL WHERE foto_prod = \'\';');
         $this->sql('UPDATE article SET remarks = NULL WHERE remarks = \'\';');
-        $this->sql('UPDATE order SET markt_id = 1;');
+        $this->sql('UPDATE `order` SET markt_id = 1;');
 
     }
 
