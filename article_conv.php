@@ -158,7 +158,7 @@ class conv {
                   $line['length'],
                   $line['foto_mi'],
                   $line['foto_ma'],
-                  $line['foto_red'],
+                  $line['foto_red'] == 1?$line['atricle_nr_red']:'',
                   $line['atricle_nr_red'],
                   $line['remarks_article']
                 );
@@ -201,9 +201,6 @@ class conv {
             }
         }
 
-        $this->sql('UPDATE article SET foto_mi = NULL WHERE foto_mi = \'\';');
-        $this->sql('UPDATE article SET foto_ma = NULL WHERE foto_ma = \'\';');
-        $this->sql('UPDATE article SET foto_prod = NULL WHERE foto_prod = \'\';');
         $this->sql('UPDATE article SET remarks = NULL WHERE remarks = \'\';');
         $this->sql('UPDATE `order` SET markt_id = 1;');
 
