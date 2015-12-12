@@ -4,19 +4,25 @@ SELECT
   article_id,
   a.created,
   c.abbr AS cat,
-  COUNT(DISTINCT instance_id) numb_instances,
-  COUNT(DISTINCT ordeR_x_instance_id) numb_sold,
+  GROUP_CONCAT(DISTINCT instance_id) instance_ids,
+  -- COUNT(DISTINCT instance_id) numb_instances,
+  GROUP_CONCAT(DISTINCT x0.instance_id) instance_ids_sold,
+  -- COUNT(DISTINCT order_x_instance_id) numb_sold,
   pattern_id pid,
   GROUP_CONCAT(
     DISTINCT
     CONCAT(position, ':', material_de)
     ORDER BY position ASC
-    SEPARATOR ', '
-  ) AS colors,
+    SEPARATOR ',\n'
+  ) AS components,
+  GROUP_CONCAT(
+    DISTINCT
+    CONCAT(position, ':', vm.col_code)
+    ORDER BY position ASC
+    SEPARATOR ',\n'
+  ) AS col_code,
   numb_strings,
   length_mm,
-  i.user_id owner,
-  i.price_cchf,
   foto_ma,
   foto_mi,
   foto_prod,
@@ -27,7 +33,8 @@ JOIN instance i USING(article_id)
 JOIN category AS c USING(category_id)
 LEFT JOIN component USING(article_id)
 LEFT JOIN material USING(material_id)
-LEFT JOIN order_x_instance USING(instance_id)
+LEFT JOIN v_material vm USING(material_id)
+LEFT JOIN order_x_instance x0 USING(instance_id)
 JOIN pattern USING(pattern_id)
 GROUP BY article_id;
 
