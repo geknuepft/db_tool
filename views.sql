@@ -76,3 +76,11 @@ JOIN order_x_instance USING(instance_id)
 JOIN `order` o USING(order_id)
 WHERE o.paid IS NOT NULL
 GROUP BY y, q, creator_uid WITH ROLLUP;
+
+DROP VIEW IF EXISTS `v_total left over`;
+CREATE VIEW `v_total left over` AS
+SELECT 
+  i.user_id creator_uid,
+  COUNT(i.instance_id) cnt_instances,
+  SUM(i.price_cchf/100) prize_chf
+FROM instance i
