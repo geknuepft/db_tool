@@ -77,8 +77,8 @@ JOIN `order` o USING(order_id)
 WHERE o.paid IS NOT NULL
 GROUP BY y, q, creator_uid WITH ROLLUP;
 
-DROP VIEW IF EXISTS `v_total_instances`;
-CREATE VIEW `v_total_instances` AS
+DROP VIEW IF EXISTS `v_total_i`;
+CREATE VIEW `v_total_i` AS
 SELECT 
   i.user_id creator_uid,
   COUNT(i.instance_id) cnt_instances,
@@ -86,8 +86,8 @@ SELECT
 FROM instance i
 GROUP BY i.user_id;
 
-DROP VIEW IF EXISTS `v_total_instances_left_over`;
-CREATE VIEW `v_total_instances_left_over` AS
+DROP VIEW IF EXISTS `v_total_i_left_over`;
+CREATE VIEW `v_total_i_left_over` AS
 SELECT 
   i.user_id creator_uid,
   COUNT(i.instance_id) cnt_instances,
@@ -97,8 +97,8 @@ LEFT JOIN order_x_instance USING(instance_id)
 WHERE order_x_instance.instance_id IS NULL
 GROUP BY i.user_id;
 
-DROP VIEW IF EXISTS `v_total_per_category`;
-CREATE VIEW `v_total_per_category` AS
+DROP VIEW IF EXISTS `v_total_i_per_cat`;
+CREATE VIEW `v_total_i_per_cat` AS
 SELECT
   a.category_id cat,
   COUNT(a.category_id) cnt_cat,
@@ -108,3 +108,15 @@ JOIN instance i USING(article_id)
 JOIN category c USING(category_id)
 GROUP BY a.category_id;
 
+DROP VIEW IF EXISTS `v_total_i_per_cat_left_over`;
+CREATE VIEW `v_total_i_per_cat_left_over` AS
+SELECT
+  a.category_id cat,
+  COUNT(a.category_id) cnt_cat,
+  SUM(i.price_cchf/100) prize_chf
+FROM article a
+JOIN instance i USING(article_id)
+JOIN category c USING(category_id)
+LEFT JOIN order_x_instance USING(instance_id)
+WHERE order_x_instance.instance_id IS NULL
+GROUP BY a.category_id;
