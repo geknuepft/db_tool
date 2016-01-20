@@ -97,4 +97,14 @@ LEFT JOIN order_x_instance USING(instance_id)
 WHERE order_x_instance.instance_id IS NULL
 GROUP BY i.user_id;
 
+DROP VIEW IF EXISTS `v_total_per_category`;
+CREATE VIEW `v_total_per_category` AS
+SELECT
+  a.category_id cat,
+  COUNT(a.category_id) cnt_cat,
+  SUM(i.price_cchf/100) prize_chf
+FROM article a
+JOIN instance i USING(article_id)
+JOIN category c USING(category_id)
+GROUP BY a.category_id;
 
