@@ -58,11 +58,12 @@ ORDER BY col_code ASC;
 
 DROP VIEW IF EXISTS v_instance;
 CREATE VIEW v_instance AS
-SELECT instance_id, article_id, i.user_id creator_uid, length_mm, price_cchf, deduction, order_id, o.platform_id, o.user_id buyer_uid, u.name_last buyer_name_last, u.name_pre buyer_name_pre, o.created order_created, o.paid order_paid, o.sent order_sent
+SELECT instance_id, article_id, i.user_id creator_uid, a.category_id cat_id, a.pattern_id pattern_id, length_mm, width_mm, height_mm, price_cchf, deduction, order_id, o.platform_id, o.user_id buyer_uid, u.name_last buyer_name_last, u.name_pre buyer_name_pre, o.created order_created, o.paid order_paid, o.sent order_sent
 FROM `instance` i
 LEFT JOIN order_x_instance USING(instance_id)
 LEFT JOIN `order` o USING(order_id)
-LEFT JOIN user u ON(u.user_id = o.user_id);
+LEFT JOIN user u ON(u.user_id = o.user_id)
+LEFT JOIN article a USING(article_id);
 
 DROP VIEW IF EXISTS v_quarter_tot;
 CREATE VIEW v_quarter_tot AS
