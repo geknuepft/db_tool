@@ -120,3 +120,25 @@ JOIN category c USING(category_id)
 LEFT JOIN order_x_instance USING(instance_id)
 WHERE order_x_instance.instance_id IS NULL
 GROUP BY a.category_id;
+
+DROP VIEW IF EXISTS v_abrechnung;
+CREATE VIEW v_abrechnung AS
+SELECT
+  o.created order_created,
+  o.paid order_paid,
+  o.sent order_sent,
+  order_id,
+  p.platform_de platform,
+  instance_id,
+  c.category_de category,
+  u.name_last buyer_name,
+  i.user_id creator,
+  price_cchf/100,
+  deduction
+FROM `instance` i
+JOIN article a USING(article_id)
+JOIN category c USING(category_id)
+LEFT JOIN order_x_instance USING(instance_id)
+LEFT JOIN `order` o USING(order_id)
+LEFT JOIN platform p USING(platform_id)
+LEFT JOIN user u ON(u.user_id = o.user_id);
