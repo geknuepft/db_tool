@@ -79,7 +79,7 @@ GROUP BY y, q, creator_uid WITH ROLLUP;
 
 DROP VIEW IF EXISTS `v_total_i`;
 CREATE VIEW `v_total_i` AS
-SELECT 
+SELECT
   i.user_id creator_uid,
   COUNT(i.instance_id) cnt_instances,
   SUM(i.price_cchf/100) prize_chf
@@ -88,7 +88,7 @@ GROUP BY i.user_id;
 
 DROP VIEW IF EXISTS `v_total_i_left_over`;
 CREATE VIEW `v_total_i_left_over` AS
-SELECT 
+SELECT
   i.user_id creator_uid,
   COUNT(i.instance_id) cnt_instances,
   SUM(i.price_cchf/100) prize_chf
@@ -130,7 +130,8 @@ SELECT
   order_id,
   p.platform_de platform,
   instance_id,
-  c.category_de category,
+  c.category_id cat_id,
+  c.category_de cat_name,
   u.name_last buyer_name,
   i.user_id creator,
   price_cchf/100,
