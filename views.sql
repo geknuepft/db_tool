@@ -21,6 +21,7 @@ SELECT
     ORDER BY position ASC
     SEPARATOR ',\n'
   ) AS col_code,
+  pattern_id,
   numb_strings,
   foto_ma,
   foto_mi,
