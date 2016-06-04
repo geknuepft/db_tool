@@ -21,11 +21,8 @@ SELECT
     ORDER BY position ASC
     SEPARATOR ',\n'
   ) AS col_code,
-  pattern_id,
+    pattern_id,
   numb_strings,
-  foto_ma,
-  foto_mi,
-  foto_prod,
   article_nr art_nr,
   a.remarks
 FROM article a
