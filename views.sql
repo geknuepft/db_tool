@@ -56,7 +56,26 @@ ORDER BY col_code ASC;
 
 DROP VIEW IF EXISTS v_instance;
 CREATE VIEW v_instance AS
-SELECT instance_id, article_id, i.user_id creator_uid, a.category_id cat_id, a.pattern_id pattern_id, length_mm, width_mm, height_mm, price_cchf, deduction, order_id, o.platform_id, o.user_id buyer_uid, u.name_last buyer_name_last, u.name_pre buyer_name_pre, o.created order_created, o.paid order_paid, o.sent order_sent
+SELECT
+  instance_id,
+  article_id,
+  i.user_id creator_uid,
+  a.category_id cat_id,
+  a.pattern_id pattern_id,
+  length_mm,
+  width_mm,
+  height_mm,
+  price_cchf,
+  deduction,
+  reduction,
+  order_id,
+  o.platform_id,
+  o.user_id buyer_uid,
+  u.name_last buyer_name_last,
+  u.name_pre buyer_name_pre,
+  o.created order_created,
+  o.paid order_paid,
+  o.sent order_sent
 FROM `instance` i
 LEFT JOIN order_x_instance USING(instance_id)
 LEFT JOIN `order` o USING(order_id)
@@ -134,7 +153,8 @@ SELECT
   u.name_last buyer_name,
   i.user_id creator,
   price_cchf/100,
-  deduction
+  deduction,
+  reduction/100
 FROM `instance` i
 JOIN article a USING(article_id)
 JOIN category c USING(category_id)
