@@ -43,9 +43,11 @@ SELECT
   material_id,
   material_de,
   vendor_ref,
-  position
+  position,
+  pattern_id
 FROM component
-JOIN material USING(material_id);
+JOIN material USING(material_id)
+JOIN article USING(article_id);
 
 DROP VIEW IF EXISTS v_material;
 CREATE VIEW v_material AS
@@ -58,6 +60,7 @@ DROP VIEW IF EXISTS v_instance;
 CREATE VIEW v_instance AS
 SELECT
   instance_id,
+  i.created created,
   article_id,
   i.user_id creator_uid,
   a.category_id cat_id,
