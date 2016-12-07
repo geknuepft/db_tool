@@ -165,3 +165,19 @@ LEFT JOIN order_x_instance USING(instance_id)
 LEFT JOIN `order` o USING(order_id)
 LEFT JOIN platform p USING(platform_id)
 LEFT JOIN user u ON(u.user_id = o.user_id);
+
+DROP VIEW IF EXISTS v_pattern;
+CREATE VIEW v_pattern AS
+SELECT
+  p.pattern_id pattern_id,
+  p.numb_strings numb_strings,
+  c.category_de category,
+  COUNT(DISTINCT a.article_id) numb_articles,
+  COUNT(DISTINCT i.instance_id) numb_instances,
+  COUNT(DISTINCT x0.instance_id) numb_instances_sold
+FROM pattern p
+JOIN article a USING(pattern_id)
+JOIN category c USING(category_id)
+LEFT JOIN instance i USING(article_id)
+LEFT JOIN order_x_instance x0 USING(instance_id)
+GROUP BY pattern_id;
