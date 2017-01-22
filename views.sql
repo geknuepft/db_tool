@@ -174,20 +174,26 @@ LEFT JOIN instance i USING(article_id)
 LEFT JOIN order_x_instance x0 USING(instance_id)
 GROUP BY pattern_id;
 
-DROP VIEW IF EXISTS v_price;
-CREATE VIEW v_price AS
+DROP VIEW IF EXISTS v_webprice;
+CREATE VIEW v_webprice AS
 SELECT
-article_id,
-instance_id,
+i.instance_id,
+i.article_id,
 a.category_id cat_id,
 a.pattern_id pattern_id,
-p.numb_strings numb_strings,
-length_mm,
-price_cchf,
-order_id
+p.numb_strings Anzahl_Fäden,
+p.difficulty Schwierigkeit,
+p.price_cchf Grundpreis,
+p.price_cchf_cm Flächenpreis,
+ROUND((p.width_mm/10), 2) Musterbreite,
+ROUND((i.length_mm/10), 2) Instanzlänge,
+ROUND((i.price_cchf/100), 2) AS Marktpreis,
+ROUND(((p.price_cchf + (p.width_mm/10 * i.length_mm/10) * p.price_cchf_cm)/100), 2) AS Webpreis,
+ROUND((((p.price_cchf + (p.width_mm/10 * i.length_mm/10) * p.price_cchf_cm)/100) - (i.price_cchf/100))/(i.price_cchf/100), 2)*100 AS 'Differenz in Prozent'
 FROM instance i
 LEFT JOIN order_x_instance USING(instance_id)
 LEFT JOIN `order` o USING(order_id)
 LEFT JOIN article a USING(article_id)
-LEFT JOIN pattern p USING(pattern_ID)
-GROUP BY article_id;
+LEFT JOIN pattern p USING(pattern_id)
+WHERE order_x_instance.instance_id IS NULL
+GROUP BY instance_id;
