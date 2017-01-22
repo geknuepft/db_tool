@@ -8,7 +8,7 @@ SELECT
   -- COUNT(DISTINCT instance_id) numb_instances,
   GROUP_CONCAT(DISTINCT x0.instance_id) instance_ids_sold,
   -- COUNT(DISTINCT order_x_instance_id) numb_sold,
-  pattern_id pid,
+  pattern_id,
   GROUP_CONCAT(
     DISTINCT
     CONCAT(position, ':', material_de)
@@ -21,7 +21,6 @@ SELECT
     ORDER BY position ASC
     SEPARATOR ',\n'
   ) AS col_code,
-    pattern_id,
   numb_strings,
   article_nr art_nr,
   a.remarks
@@ -48,13 +47,6 @@ SELECT
 FROM component
 JOIN material USING(material_id)
 JOIN article USING(article_id);
-
-DROP VIEW IF EXISTS v_material;
-CREATE VIEW v_material AS
-SELECT material_id, CONCAT(p.abbr, vendor_ref) col_code
-FROM product p
-JOIN material m USING(product_id)
-ORDER BY col_code ASC;
 
 DROP VIEW IF EXISTS v_instance;
 CREATE VIEW v_instance AS
@@ -91,7 +83,7 @@ SELECT
   YEAR(o.paid) y, QUARTER(o.paid) q,
   i.user_id creator_uid,
   COUNT(i.instance_id) cnt_instances,
-  SUM(i.price_cchf * (1-i.deduction/100))/100 price_chf
+  SUM((i.price_cchf * (1-i.deduction/100))-i.reduction)/100 price_chf
 FROM instance i
 JOIN order_x_instance USING(instance_id)
 JOIN `order` o USING(order_id)
@@ -181,3 +173,21 @@ JOIN category c USING(category_id)
 LEFT JOIN instance i USING(article_id)
 LEFT JOIN order_x_instance x0 USING(instance_id)
 GROUP BY pattern_id;
+
+DROP VIEW IF EXISTS v_price;
+CREATE VIEW v_price AS
+SELECT
+article_id,
+instance_id,
+a.category_id cat_id,
+a.pattern_id pattern_id,
+p.numb_strings numb_strings,
+length_mm,
+price_cchf,
+order_id
+FROM instance i
+LEFT JOIN order_x_instance USING(instance_id)
+LEFT JOIN `order` o USING(order_id)
+LEFT JOIN article a USING(article_id)
+LEFT JOIN pattern p USING(pattern_ID)
+GROUP BY article_id;
