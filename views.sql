@@ -179,21 +179,30 @@ CREATE VIEW v_webprice AS
 SELECT
 i.instance_id,
 i.article_id,
-a.category_id cat_id,
-a.pattern_id pattern_id,
-p.numb_strings Anzahl_Fäden,
+c.abbr Kategorie,
+a.pattern_id Muster,
+p.numb_strings Fäden,
 p.difficulty Schwierigkeit,
+t.desc_de Technik,
 p.price_cchf Grundpreis,
 p.price_cchf_cm Flächenpreis,
 ROUND((p.width_mm/10), 2) Musterbreite,
 ROUND((i.length_mm/10), 2) Instanzlänge,
 ROUND((i.price_cchf/100), 2) AS Marktpreis,
 ROUND(((p.price_cchf + (p.width_mm/10 * i.length_mm/10) * p.price_cchf_cm)/100), 2) AS Webpreis,
-ROUND((((p.price_cchf + (p.width_mm/10 * i.length_mm/10) * p.price_cchf_cm)/100) - (i.price_cchf/100))/(i.price_cchf/100), 2)*100 AS 'Differenz in Prozent'
+ROUND((((p.price_cchf + (p.width_mm/10 * i.length_mm/10) * p.price_cchf_cm)/100) - (i.price_cchf/100))/(i.price_cchf/100), 2)*100 AS 'Differenz in Prozent',
+CASE
+  WHEN p.numb_strings BETWEEN 2 AND 9 THEN '10%'
+  WHEN p.numb_strings BETWEEN 10 AND 14 THEN '15%'
+  WHEN p.numb_strings BETWEEN 15 AND 29 THEN '20%'
+  WHEN p.numb_strings >= 30 THEN '25%'
+  ELSE 0 END as 'Differenz Soll'
 FROM instance i
 LEFT JOIN order_x_instance USING(instance_id)
 LEFT JOIN `order` o USING(order_id)
 LEFT JOIN article a USING(article_id)
+LEFT JOIN category c USING(category_id)
 LEFT JOIN pattern p USING(pattern_id)
-WHERE order_x_instance.instance_id IS NULL
+LEFT JOIN technique t USING(technique_id)
+WHERE order_x_instance.instance_id IS NULL AND a.category_id NOT IN (8,10)
 GROUP BY instance_id;
