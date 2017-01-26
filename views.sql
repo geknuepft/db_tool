@@ -1,3 +1,10 @@
+DROP VIEW IF EXISTS v_material;
+CREATE VIEW v_material AS
+SELECT material_id, CONCAT(p.abbr, vendor_ref) col_code
+FROM product p
+JOIN material m USING(product_id)
+ORDER BY col_code ASC;
+
 DROP VIEW IF EXISTS v_article;
 CREATE VIEW v_article AS
 SELECT
