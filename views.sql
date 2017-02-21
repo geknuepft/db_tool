@@ -206,3 +206,18 @@ LEFT JOIN pattern p USING(pattern_id)
 LEFT JOIN technique t USING(technique_id)
 WHERE order_x_instance.instance_id IS NULL AND a.category_id NOT IN (8,10)
 GROUP BY instance_id;
+
+DROP VIEW IF EXISTS v_image;
+CREATE VIEW v_image AS
+SELECT
+  instance_id,
+  a.article_id,
+  GROUP_CONCAT(
+    DISTINCT
+    CONCAT(im.path)
+    SEPARATOR ',\n'
+  ) AS paths
+FROM instance i
+JOIN article a USING(article_id)
+LEFT JOIN image im USING(article_id)
+GROUP BY instance_id;
