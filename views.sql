@@ -1,3 +1,10 @@
+DROP VIEW IF EXISTS v_material;
+CREATE VIEW v_material AS
+SELECT material_id, CONCAT(p.abbr, vendor_ref) col_code
+FROM product p
+JOIN material m USING(product_id)
+ORDER BY col_code ASC;
+
 DROP VIEW IF EXISTS v_article;
 CREATE VIEW v_article AS
 SELECT
@@ -41,6 +48,7 @@ SELECT
   article_id,
   material_id,
   material_de,
+  price_pp_cchf,
   vendor_ref,
   position,
   pattern_id
@@ -181,6 +189,7 @@ i.instance_id,
 i.article_id,
 c.abbr Kategorie,
 a.pattern_id Muster,
+col.collection_id Kollektion,
 p.numb_strings Fäden,
 p.difficulty Schwierigkeit,
 t.desc_de Technik,
@@ -204,6 +213,7 @@ LEFT JOIN article a USING(article_id)
 LEFT JOIN category c USING(category_id)
 LEFT JOIN pattern p USING(pattern_id)
 LEFT JOIN technique t USING(technique_id)
+LEFT JOIN collection col USING(collection_id)
 WHERE order_x_instance.instance_id IS NULL AND a.category_id NOT IN (8,10)
 GROUP BY instance_id;
 
@@ -212,12 +222,15 @@ CREATE VIEW v_image AS
 SELECT
   instance_id,
   a.article_id,
-  GROUP_CONCAT(
+    GROUP_CONCAT(
     DISTINCT
     CONCAT(im.path)
     SEPARATOR ',\n'
-  ) AS paths
+  ) AS paths,
+  o.order_id
 FROM instance i
 JOIN article a USING(article_id)
 LEFT JOIN image im USING(article_id)
+LEFT JOIN order_x_instance USING(instance_id)
+LEFT JOIN `order` o USING(order_id)
 GROUP BY instance_id;
