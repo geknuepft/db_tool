@@ -183,6 +183,7 @@ DROP VIEW IF EXISTS `v_total_i_per_cat`;
 CREATE VIEW `v_total_i_per_cat` AS
 SELECT
   a.category_id cat,
+  c.category_de cat_name,
   COUNT(a.category_id) cnt_cat,
   SUM(i.price_cchf/100) prize_chf
 FROM article a
@@ -194,6 +195,7 @@ DROP VIEW IF EXISTS `v_total_i_per_cat_left_over`;
 CREATE VIEW `v_total_i_per_cat_left_over` AS
 SELECT
   a.category_id cat,
+  c.category_de cat_name,
   COUNT(a.category_id) cnt_cat,
   SUM(i.price_cchf/100) prize_chf
 FROM article a
@@ -201,6 +203,20 @@ JOIN instance i USING(article_id)
 JOIN category c USING(category_id)
 LEFT JOIN order_x_instance USING(instance_id)
 WHERE order_x_instance.instance_id IS NULL
+GROUP BY a.category_id;
+
+DROP VIEW IF EXISTS `v_total_i_per_cat_sold`;
+CREATE VIEW `v_total_i_per_cat_sold` AS
+SELECT
+  a.category_id cat,
+  c.category_de cat_name,
+  COUNT(a.category_id) cnt_cat,
+  SUM(i.price_cchf/100) prize_chf
+FROM article a
+JOIN instance i USING(article_id)
+JOIN category c USING(category_id)
+LEFT JOIN order_x_instance USING(instance_id)
+WHERE order_x_instance.instance_id IS NOT NULL
 GROUP BY a.category_id;
 
 DROP VIEW IF EXISTS `v_total_i_per_coll`;
