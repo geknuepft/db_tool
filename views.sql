@@ -311,6 +311,47 @@ LEFT JOIN product_type USING(product_type_id)
 WHERE order_x_instance.instance_id IS NULL AND c.category_id IN (1,2,3,4,6,11) AND product_type_id = 1
 GROUP BY instance_id;
 
+DROP VIEW IF EXISTS v_webprice_no4_perlen;
+CREATE VIEW v_webprice_no4_perlen AS
+SELECT
+i.instance_id,
+i.article_id,
+c.abbr Kategorie,
+a.pattern_id Muster,
+col.collection_id Kollektion,
+p.numb_strings Fäden,
+p.difficulty Schwierigkeit,
+t.technique Technik,
+p.price_cchf Grundpreis,
+p.price_cchf_cm2 Flächenpreis,
+ROUND((p.numb_pearls + (p.numb_pearls_10cm*i.length_mm/10/10)), 0) AS Perlenanzahl,
+ROUND((p.width_mm/10), 2) AS Musterbreite,
+ROUND((p.width_mm/10*0.8), 2) AS 'Instanzbreite berechnet',
+ROUND((i.length_mm/10), 2) Instanzlänge,
+ROUND((i.price_cchf/100), 2) AS Marktpreis,
+ROUND(((p.price_cchf + ((p.width_mm/10 * i.length_mm/10) * p.price_cchf_cm2)/0.8)/100), 2) AS Webpreis,
+ROUND((((p.price_cchf + ((p.width_mm/10 * i.length_mm/10) * p.price_cchf_cm2)/0.8)/100) - (i.price_cchf/100))/(i.price_cchf/100), 2)*100 AS 'Differenz in Prozent',
+CASE
+  WHEN p.numb_strings BETWEEN 2 AND 9 THEN '10%'
+  WHEN p.numb_strings BETWEEN 10 AND 14 THEN '15%'
+  WHEN p.numb_strings BETWEEN 15 AND 29 THEN '20%'
+  WHEN p.numb_strings >= 30 THEN '25%'
+  ELSE 0 END AS 'Differenz Soll'
+FROM instance i
+LEFT JOIN order_x_instance USING(instance_id)
+LEFT JOIN `order` o USING(order_id)
+LEFT JOIN article a USING(article_id)
+LEFT JOIN category c USING(category_id)
+LEFT JOIN pattern p USING(pattern_id)
+LEFT JOIN technique t USING(technique_id)
+LEFT JOIN collection col USING(collection_id)
+LEFT JOIN component USING(article_id)
+LEFT JOIN material m USING(material_id)
+LEFT JOIN product USING(product_id)
+LEFT JOIN product_type USING(product_type_id)
+WHERE order_x_instance.instance_id IS NULL AND c.category_id IN (9,12) AND product_type_id = 1
+GROUP BY instance_id;
+
 DROP VIEW IF EXISTS v_webprice_no8;
 CREATE VIEW v_webprice_no8 AS
 SELECT
