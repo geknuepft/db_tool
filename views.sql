@@ -133,7 +133,7 @@ SELECT
     Total.creator_uid AS creator,
     Total.cnt_instances AS i_total,
     Total.price_chf AS price_total,
-    Leftover.cnt_instance AS i_leftover,
+    Leftover.cnt_instances AS i_leftover,
     Leftover.price_chf AS price_leftover
 FROM
     (
@@ -159,8 +159,8 @@ ON Total.creator_uid = Leftover.creator_uid
 ORDER BY Total.creator_uid;
 
 
-DROP VIEW IF EXISTS `v_total_i`;
-CREATE VIEW `v_total_i` AS
+DROP VIEW IF EXISTS `v_total_i_per_user`;
+CREATE VIEW `v_total_i_per_user` AS
 SELECT
   i.user_id creator_uid,
   COUNT(i.instance_id) cnt_instances,
@@ -168,8 +168,8 @@ SELECT
 FROM instance i
 GROUP BY i.user_id;
 
-DROP VIEW IF EXISTS `v_total_i_left_over`;
-CREATE VIEW `v_total_i_left_over` AS
+DROP VIEW IF EXISTS `v_total_i__per_user_left_over`;
+CREATE VIEW `v_total_i_per_user_left_over` AS
 SELECT
   i.user_id creator_uid,
   COUNT(i.instance_id) cnt_instances,
@@ -177,6 +177,17 @@ SELECT
 FROM instance i
 LEFT JOIN order_x_instance USING(instance_id)
 WHERE order_x_instance.instance_id IS NULL
+GROUP BY i.user_id;
+
+DROP VIEW IF EXISTS `v_total_i_per_user_sold`;
+CREATE VIEW `v_total_i_per_user_sold` AS
+SELECT
+  i.user_id creator_uid,
+  COUNT(i.instance_id) cnt_instances,
+  SUM(i.price_cchf/100) prize_chf
+FROM instance i
+LEFT JOIN order_x_instance USING(instance_id)
+WHERE order_x_instance.instance_id IS NOT NULL
 GROUP BY i.user_id;
 
 DROP VIEW IF EXISTS `v_total_i_per_cat`;
