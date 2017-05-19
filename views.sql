@@ -203,6 +203,46 @@ LEFT JOIN order_x_instance USING(instance_id)
 WHERE order_x_instance.instance_id IS NULL
 GROUP BY a.category_id;
 
+DROP VIEW IF EXISTS `v_total_i_per_coll`;
+CREATE VIEW `v_total_i_per_coll` AS
+SELECT
+  a.collection_id coll_id,
+  c.collection coll_name,
+  COUNT(a.collection_id) cnt_coll,
+  SUM(i.price_cchf/100) prize_chf
+FROM article a
+JOIN instance i USING(article_id)
+JOIN collection c USING(collection_id)
+GROUP BY a.collection_id;
+
+DROP VIEW IF EXISTS `v_total_i_per_coll_left_over`;
+CREATE VIEW `v_total_i_per_coll_left_over` AS
+SELECT
+  a.collection_id coll_id,
+  c.collection coll_name,
+  COUNT(a.collection_id) cnt_coll,
+  SUM(i.price_cchf/100) prize_chf
+FROM article a
+JOIN instance i USING(article_id)
+JOIN collection c USING(collection_id)
+LEFT JOIN order_x_instance USING(instance_id)
+WHERE order_x_instance.instance_id IS NULL
+GROUP BY a.collection_id;
+
+DROP VIEW IF EXISTS `v_total_i_per_coll_sold`;
+CREATE VIEW `v_total_i_per_coll_sold` AS
+SELECT
+  a.collection_id coll_id,
+  c.collection coll_name,
+  COUNT(a.collection_id) cnt_coll,
+  SUM(i.price_cchf/100) prize_chf
+FROM article a
+JOIN instance i USING(article_id)
+JOIN collection c USING(collection_id)
+LEFT JOIN order_x_instance USING(instance_id)
+WHERE order_x_instance.instance_id IS NOT NULL
+GROUP BY a.collection_id;
+
 DROP VIEW IF EXISTS v_webprice_no4;
 CREATE VIEW v_webprice_no4 AS
 SELECT
