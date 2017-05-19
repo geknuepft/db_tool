@@ -33,6 +33,7 @@ SELECT
   GROUP_CONCAT(DISTINCT x0.instance_id) instance_ids_sold,
   -- COUNT(DISTINCT order_x_instance_id) numb_sold,
   pattern_id,
+  collection_id,
   numb_strings,
   GROUP_CONCAT(
     DISTINCT
