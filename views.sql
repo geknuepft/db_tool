@@ -127,6 +127,38 @@ JOIN `order` o USING(order_id)
 WHERE o.paid IS NOT NULL
 GROUP BY y, q, creator_uid WITH ROLLUP;
 
+DROP VIEW IF EXISTS `v_total_instance`;
+CREATE VIEW `v_total_instance` AS
+SELECT
+    Total.creator_uid AS creator,
+    Total.cnt_instances AS i_total,
+    Total.price_chf AS price_total,
+    Leftover.cnt_instance AS i_leftover,
+    Leftover.price_chf AS price_leftover
+FROM
+    (
+        SELECT
+            i.user_id creator_uid,
+            COUNT(i.instance_id) cnt_instances,
+            SUM(i.price_cchf/100) price_chf
+        FROM instance i
+        GROUP BY i.user_id
+    ) AS Total
+    INNER JOIN
+    (
+        SELECT
+            i.user_id creator_uid,
+            COUNT(i.instance_id) cnt_instances,
+            SUM(i.price_cchf/100) price_chf
+        FROM instance i
+        LEFT JOIN order_x_instance USING(instance_id)
+        WHERE order_x_instance.instance_id IS NULL
+        GROUP BY i.user_id
+    ) AS Leftover
+ON Total.creator_uid = Leftover.creator_uid
+ORDER BY Total.creator_uid;
+
+
 DROP VIEW IF EXISTS `v_total_i`;
 CREATE VIEW `v_total_i` AS
 SELECT
